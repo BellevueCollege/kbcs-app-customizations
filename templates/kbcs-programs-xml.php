@@ -55,6 +55,8 @@ while ( $wp_query->have_posts() ) {
   	foreach ( $json as $result ) 
       {	  
 
+        //TODO: Skip over/remove episodes/shows that are in the future? First need to verify why these exist...
+        
   	    $title = $result['title'].' '.date_format(date_create($result['start']), "m/d/y");
   	  
         $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
@@ -65,7 +67,7 @@ while ( $wp_query->have_posts() ) {
         $creator_node->appendChild($creator_contents);
   	  
         //Unique identifier for the item (GUID)
-        $guid_link = $xml->createElement("guid", get_the_guid() . "/" . $result['showId']);  
+        $guid_link = $xml->createElement("guid", get_the_guid() . "/" . $result['showId']); //adding show ID to WP guid to create unique string
         $guid_link->setAttribute("isPermaLink","false");
         $guid_node = $item_node->appendChild($guid_link); 
        
@@ -76,7 +78,7 @@ while ( $wp_query->have_posts() ) {
         $description_contents = $xml->createCDATASection(htmlentities("Change this text to something from Wordpress?"));  
         $description_node->appendChild($description_contents);*/
   	  
-    	  //audio URI
+    	  //Audio URI
     	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
     	  $enc_node = $xml->createElement("enclosure", $enclosure);
     	  $enc_node->setAttribute("type", "audio/mpeg");

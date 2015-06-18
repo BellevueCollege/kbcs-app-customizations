@@ -3,19 +3,18 @@
 * This template outputs an aggregate feed of segment episodes based on a provided program type.
 * Example URL: http://kbcs.local/program_type/music/episodes?itemcount=15
 **/
-//header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
-
+header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
+//echo "here too.";
 $program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programID=%d&pageSize=%d'; //Playlist Center API URL
 $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3'; //template for archive audio filename
 
 //loop through all programs of this program type, get episodes from Playlist Center, and add to episode array
+//TODO: Skip over/remove episodes that are in the future. First need to verify why these exist...
 $episode_array = array();
-
 while ( $wp_query->have_posts() ) {
   $wp_query->the_post();
   $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
-  
-  $content = file_get_contents(sprintf($program_url,$program_id,$num));
+  $content = file_get_contents(sprintf($program_url,$program_id,15));
   $json = json_decode($content, true);
   
   if( $json ){
@@ -81,7 +80,7 @@ if($episode_slice) { //we have program info
       $creator_node->appendChild($creator_contents);
 	  
       //Unique identifier for the item (GUID)
-      $guid_link = $xml->createElement("guid", get_the_guid() . "/" . $result['showId']);  
+      $guid_link = $xml->createElement("guid", get_the_guid() . "/" . $result['showId']); //adding show ID to WP guid to create unique string
       $guid_link->setAttribute("isPermaLink","false");
       $guid_node = $item_node->appendChild($guid_link); 
      

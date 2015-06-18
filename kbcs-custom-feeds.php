@@ -14,12 +14,14 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 	
 	class KBCS_Custom_Feeds { 
 	
-		protected $feed_slug = 'episodes';
+		protected $feed_slug = 'shows';
+		protected $orig_feed_num; 
 		
 		function __construct() {
 			//add action and filter needed
+			$this->orig_feed_num = get_option('posts_per_rss');
+			add_filter( 'pre_option_posts_per_rss', array( $this, 'kcf_posts_per_rss') );
 			add_action( 'init', array($this, 'kcf_add_feed'));
-			add_filter( 'pre_get_posts', array( $this, 'kcf_pre_get_posts' ) );
 		}
 	
 		//add custom feed
@@ -31,11 +33,9 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 		function kcf_render() {
 
 			global $wp_query;
-			//var_dump($wp_query);
-			//exit();
 			
 			//Set alternate item count, if provided
-			$num = 10;
+			$num = $this->orig_feed_num;
 			if ( !empty($_REQUEST["itemcount"]) ) {
   				$num = intval($_REQUEST["itemcount"]);
 			}
@@ -48,17 +48,6 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			
 			//include appropriate feed template file
 			if(!empty($query_program_type)){
-				//$taxonomy = "program_type";
-				//$term = $query_program_type;
-				
-				/*$query = new WP_Query(
-				    array(
-				       'post_type'=> $post_type, 
-				       'taxonomy'=> $taxonomy, 
-				       'term' => $term, 
-				       'status' => 'published',
-				       'order' => 'desc')
-			    );*/
 				include dirname( __FILE__ ) . '/templates/kbcs-programtype-xml.php';
 			} else if ( isset($query_post_type) && $query_post_type == "programs") {
 				include dirname( __FILE__ ) . '/templates/kbcs-programs-xml.php';
@@ -67,20 +56,20 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			exit();
 		}
 		
-		//change query vars before WP gets posts
-		function kcf_pre_get_posts( $query ) {
-	
-			if ( $query->is_main_query() && $query->is_feed( $this->feed_slug ) ) {
-			
-				$query->set( 'posts_per_page', -1);
-				$query->set( 'posts_per_rss', -1);
-				/*$query->set( 'post_status', 'publish');
-				if ( get_query_var('taxonomy') == 'program_type' )
-					$query->set( 'posts_per_page', -1);*/
-				$query->set( 'nopaging', 1 );
-			
+		/**
+		* Change posts_per_rss value if a program_type feed query
+		* This is a work around necessary because of its aggregate nature - i.e. we need to get _all_ 
+		* programs in the main query, so that we get all relevant shows/episodes from the Playlist Center.
+		*/
+		function kcf_posts_per_rss( $option_name ) {
+			global $wp_query;
+			$query_program_type = $wp_query->get('program_type');
+			if ( $wp_query->is_main_query() && $wp_query->is_feed( $this->feed_slug ) && !empty($query_program_type) ) {
+				return 100;
 			}
+    		return $option_name;
 		}
+		
 	}
 }
 if ( class_exists('KBCS_Custom_Feeds') ) {
