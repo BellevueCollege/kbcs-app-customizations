@@ -4,7 +4,7 @@ Plugin Name: KBCS Custom Feeds
 Plugin URI: https://github.com/BellevueCollege/kbcs-custom-feeds
 Description: Provides additional feed functionality utilizing the Playlist Center API
 Author: Bellevue College Integration Team
-Version: 0.1
+Version: 0.0.0.1
 Author URI: http://www.bellevuecollege.edu
 */
 
