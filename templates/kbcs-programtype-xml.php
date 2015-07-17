@@ -4,7 +4,7 @@
 * Example URL: http://kbcs.local/program_type/music/episodes?itemcount=15
 **/
 header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
-//echo "here too.";
+
 $program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programID=%d&pageSize=%d'; //Playlist Center API URL
 $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3'; //template for archive audio filename
 
@@ -14,12 +14,33 @@ $episode_array = array();
 while ( $wp_query->have_posts() ) {
   $wp_query->the_post();
   $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
-  $content = file_get_contents(sprintf($program_url,$program_id,15));
+  $content = file_get_contents(sprintf($program_url,$program_id,20));
   $json = json_decode($content, true);
   
   if( $json ){
     foreach( $json as $result ) {
-      $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
+        //Set correct timezone - is there a way to get this from the server?
+        $timezone = new DateTimeZone("America/Los_Angeles");
+        
+        //Create now date/time object
+        $now = new DateTime();
+        $now->setTimezone($timezone);
+        
+        //Create show date/time object
+        $show_date = new DateTime($result['start'], $timezone);
+
+        //Get timestamps for comparison, skip this result if show happens in future
+        $now_ts = $now->getTimestamp();
+        $show_date_ts = $show_date->getTimestamp();
+
+        if ( ($now_ts - $show_date_ts) < 0 ) {
+          //show happens in the future so skip
+          continue;
+        }
+        else {
+          //add to results
+          $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
+        }
     }
   }
 }
@@ -84,13 +105,19 @@ if($episode_slice) { //we have program info
       $guid_link->setAttribute("isPermaLink","false");
       $guid_node = $item_node->appendChild($guid_link); 
      
-      //create "description" node under "item"
-      //$description_node = $item_node->appendChild($xml->createElement("description"));  
+         //create "description" node under "item" to use for feature image
+        if ( has_post_thumbnail() ) {
+          //echo "thumbnail";
+          $image_id = get_post_thumbnail_id(get_the_ID());
+          $image_uri = wp_get_attachment_image_src($image_id, "full");
+          //var_dump($image_uri);
+          if ( !empty($image_uri[0]) ){
+            $description_node = $item_node->appendChild($xml->createElement("description"));  
+            $description_contents = $xml->createCDATASection(htmlentities($image_uri[0]));  
+            $description_node->appendChild($description_contents);
+          }
+        }
       
-      //fill description node with CDATA content
-      //$description_contents = $xml->createCDATASection(htmlentities("Change this text to something from Wordpress?"));  
-      //$description_node->appendChild($description_contents);
-	  
   	  //audio URI
   	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
   	  $enc_node = $xml->createElement("enclosure");

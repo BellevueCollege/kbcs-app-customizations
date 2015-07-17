@@ -6,7 +6,7 @@ $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3
 
 while ( $wp_query->have_posts() ) {
   $wp_query->the_post();
-
+  //var_dump($post);
   $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
 
   //call the JSON API
@@ -55,7 +55,24 @@ while ( $wp_query->have_posts() ) {
   	foreach ( $json as $result ) 
       {	  
 
-        //TODO: Skip over/remove episodes/shows that are in the future? First need to verify why these exist...
+        //Set correct timezone - is there a way to get this from the server?
+        $timezone = new DateTimeZone("America/Los_Angeles");
+        
+        //Create now date/time object
+        $now = new DateTime();
+        $now->setTimezone($timezone);
+        
+        //Create show date/time object
+        $show_date = new DateTime($result['start'], $timezone);
+
+        //Get timestamps for comparison, skip this result if show happens in future
+        $now_ts = $now->getTimestamp();
+        $show_date_ts = $show_date->getTimestamp();
+
+        if ( ($now_ts - $show_date_ts) < 0 ) {
+          //show happens in the future so skip
+          continue;
+        }
         
   	    $title = $result['title'].' '.date_format(date_create($result['start']), "m/d/y");
   	  
@@ -71,13 +88,19 @@ while ( $wp_query->have_posts() ) {
         $guid_link->setAttribute("isPermaLink","false");
         $guid_node = $item_node->appendChild($guid_link); 
        
-        //create "description" node under "item"
-        /*$description_node = $item_node->appendChild($xml->createElement("description"));  
-        
-        //fill description node with CDATA content
-        $description_contents = $xml->createCDATASection(htmlentities("Change this text to something from Wordpress?"));  
-        $description_node->appendChild($description_contents);*/
-  	  
+         //create "description" node under "item" to use for feature image
+        if ( has_post_thumbnail() ) {
+          //echo "thumbnail";
+          $image_id = get_post_thumbnail_id(get_the_ID());
+          $image_uri = wp_get_attachment_image_src($image_id, "full");
+          //var_dump($image_uri);
+          if ( !empty($image_uri[0]) ){
+            $description_node = $item_node->appendChild($xml->createElement("description"));  
+            $description_contents = $xml->createCDATASection(htmlentities($image_uri[0]));  
+            $description_node->appendChild($description_contents);
+          }
+        }
+
     	  //Audio URI
     	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
     	  $enc_node = $xml->createElement("enclosure", $enclosure);
