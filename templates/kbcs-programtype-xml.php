@@ -5,51 +5,18 @@
 **/
 header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
 
-$program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programID=%d&pageSize=%d'; //Playlist Center API URL
 $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3'; //template for archive audio filename
 
-//loop through all programs of this program type, get episodes from Playlist Center, and add to episode array
-//TODO: Skip over/remove episodes that are in the future. First need to verify why these exist...
-$episode_array = array();
-while ( $wp_query->have_posts() ) {
-  $wp_query->the_post();
-  $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
-  $content = file_get_contents(sprintf($program_url,$program_id,20));
-  $json = json_decode($content, true);
-  
-  if( $json ){
-    foreach( $json as $result ) {
-        //Set correct timezone - is there a way to get this from the server?
-        $timezone = new DateTimeZone("America/Los_Angeles");
-        
-        //Create now date/time object
-        $now = new DateTime();
-        $now->setTimezone($timezone);
-        
-        //Create show date/time object
-        $show_date = new DateTime($result['start'], $timezone);
+$prog_object = get_transient("kcf_object_".$query_program_type);
 
-        //Get timestamps for comparison, skip this result if show happens in future
-        $now_ts = $now->getTimestamp();
-        $show_date_ts = $show_date->getTimestamp();
-
-        if ( ($now_ts - $show_date_ts) < 0 ) {
-          //show happens in the future so skip
-          continue;
-        }
-        else {
-          //add to results
-          $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
-        }
-    }
-  }
-}
-
-//Do key-ed sort (since start is used as key) by start date reverse
-krsort($episode_array);
+if ( false === $prog_object ){
+  //object doesn't exist in cache, so generate it before continuing
+  $this->kcf_generate_feed_object($query_program_type);
+  $prog_object = get_transient("kcf_object_".$query_program_type);
+} 
 
 //cut array to specified size
-$episode_slice = array_slice($episode_array, 0, $num);
+$episode_slice = array_slice($prog_object, 0, $num);
 
 $xml = new DOMDocument("1.0", "UTF-8"); // Create new DOM document.
 
@@ -105,18 +72,18 @@ if($episode_slice) { //we have program info
       $guid_link->setAttribute("isPermaLink","false");
       $guid_node = $item_node->appendChild($guid_link); 
      
-         //create "description" node under "item" to use for feature image
-        if ( has_post_thumbnail() ) {
-          //echo "thumbnail";
-          $image_id = get_post_thumbnail_id(get_the_ID());
+      //create "description" node under "item" to use for feature image
+      if ( has_post_thumbnail($result['wp_post_id']) ) {
+
+          $image_id = get_post_thumbnail_id($result['wp_post_id']);
           $image_uri = wp_get_attachment_image_src($image_id, "full");
-          //var_dump($image_uri);
+
           if ( !empty($image_uri[0]) ){
             $description_node = $item_node->appendChild($xml->createElement("description"));  
             $description_contents = $xml->createCDATASection(htmlentities($image_uri[0]));  
             $description_node->appendChild($description_contents);
           }
-        }
+      }
       
   	  //audio URI
   	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
