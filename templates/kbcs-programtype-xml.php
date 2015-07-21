@@ -16,7 +16,16 @@ if ( false === $prog_object ){
 } 
 
 //cut array to specified size
-$episode_slice = array_slice($prog_object, 0, $num);
+$start_result = 0;
+$episode_slice = null;
+if ( !empty($_REQUEST["page"]) && is_numeric($_REQUEST["page"]) ) {
+  $page = (int)$_REQUEST["page"];
+  $start_result = ($page-1) * $num;
+}
+
+if ( $start_result < sizeof($prog_object) ){
+  $episode_slice = array_slice($prog_object, $start_result, $num);
+}
 
 $xml = new DOMDocument("1.0", "UTF-8"); // Create new DOM document.
 
