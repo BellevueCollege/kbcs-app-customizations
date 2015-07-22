@@ -1,15 +1,4 @@
 <?php
-/*
-Plugin Name: KBCS Custom Feeds
-Plugin URI: https://github.com/BellevueCollege/kbcs-custom-feeds
-Description: Provides additional feed functionality utilizing the Playlist Center API
-Author: Bellevue College Integration Team
-Version: 0.0.0.1
-Author URI: http://www.bellevuecollege.edu
-*/
-
-defined( 'ABSPATH' ) OR exit;
-
 if(!class_exists('KBCS_Custom_Feeds')) {
 	
 	class KBCS_Custom_Feeds { 
@@ -17,7 +6,7 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 		protected $feed_slug = 'episodes';
 		protected $orig_feed_num;
 		protected $cron_job_name = 'kcf_generate_aggregate_feed_objects';
-		protected $cron_interval = 1;	//cron interval in minutes
+		protected $cron_interval = 15;	//cron interval in minutes
 		protected $cron_interval_name = 'kcf_bihourly';
 		protected $aggregate_program_types = array('music','news-ideas');	//program types we know to pregenerate a cache for
 		
@@ -199,12 +188,4 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			set_transient("kcf_object_".$prog_type, $episode_array, 3605);
 		}	
 	}
-}
-if ( class_exists('KBCS_Custom_Feeds') ) {
-	//instantiate class
-	$kbcs_custom_feeds = new KBCS_Custom_Feeds();
-	
-	//register activation and deactivation hooks
-	register_activation_hook(__FILE__, array($kbcs_custom_feeds, 'kcf_activation'));
-	register_deactivation_hook(__FILE__, array($kbcs_custom_feeds, 'kcf_deactivation'));
 }
