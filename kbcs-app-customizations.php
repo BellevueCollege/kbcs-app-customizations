@@ -11,6 +11,7 @@ Author URI: http://www.bellevuecollege.edu
 defined( 'ABSPATH' ) OR exit;
 
 require_once('kbcs-custom-feeds.php');
+require_once('kbcs-episode-page.php');
 
 if ( class_exists('KBCS_Custom_Feeds') ) {
 	//instantiate class
@@ -19,4 +20,13 @@ if ( class_exists('KBCS_Custom_Feeds') ) {
 	//register activation and deactivation hooks
 	register_activation_hook(__FILE__, array($kbcs_custom_feeds, 'kcf_activation'));
 	register_deactivation_hook(__FILE__, array($kbcs_custom_feeds, 'kcf_deactivation'));
+}
+
+if ( class_exists('KBCS_Episode_Page') ) {
+	//instantiate class
+	$kbcs_episode_page = new KBCS_Episode_Page();
+	
+	//register activation and deactivation hooks
+	register_activation_hook(__FILE__, array($kbcs_episode_page, 'kep_activation'));
+	register_deactivation_hook(__FILE__, array($kbcs_episode_page, 'kep_deactivation'));
 }
