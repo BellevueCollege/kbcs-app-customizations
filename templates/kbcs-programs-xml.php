@@ -103,8 +103,9 @@ while ( $wp_query->have_posts() ) {
 
     	  //Audio URI
     	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
-    	  $enc_node = $xml->createElement("enclosure", $enclosure);
+    	  $enc_node = $xml->createElement("enclosure");
     	  $enc_node->setAttribute("type", "audio/mpeg");
+        $enc_node->setAttribute("url", $enclosure);
     	  $item_node->appendChild($enc_node);
   	  
         //Published date
