@@ -73,7 +73,7 @@ while ( $wp_query->have_posts() ) {
           continue;
         }
         
-  	    $title = $result['title'].' '.date_format(date_create($result['start']), "m/d/y");
+  	    $title = $result['title'].' '.date_format(date_create($result['start']), "n/j/y");
   	  
         $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
         $title_node = $item_node->appendChild($xml->createElement("title", $title)); //Add title under "item"
