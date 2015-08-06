@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: KBCS App Customizations
-Plugin URI: https://github.com/BellevueCollege/kbcs-custom-feeds
+Plugin URI: https://github.com/BellevueCollege/kbcs-app-customizations
 Description: Provides additional feed functionality and episode-specific page utilizing the Playlist Center API
 Author: Bellevue College Integration Team
-Version: 0.0.0.2
+Version: 0.0.0.3
 Author URI: http://www.bellevuecollege.edu
 */
 
@@ -25,8 +25,4 @@ if ( class_exists('KBCS_Custom_Feeds') ) {
 if ( class_exists('KBCS_Episode_Page') ) {
 	//instantiate class
 	$kbcs_episode_page = new KBCS_Episode_Page();
-	
-	//register activation and deactivation hooks
-	register_activation_hook(__FILE__, array($kbcs_episode_page, 'kep_activation'));
-	register_deactivation_hook(__FILE__, array($kbcs_episode_page, 'kep_deactivation'));
 }

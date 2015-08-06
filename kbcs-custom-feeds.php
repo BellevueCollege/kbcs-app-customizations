@@ -1,34 +1,54 @@
 <?php
+require_once('kbcs-config.php');	//include config
+
 if(!class_exists('KBCS_Custom_Feeds')) {
 	
 	class KBCS_Custom_Feeds { 
 	
-		protected $feed_slug = 'episodes';
-		protected $orig_feed_num;
-		protected $cron_job_name = 'kcf_generate_aggregate_feed_objects';
-		protected $cron_interval = 15;	//cron interval in minutes
-		protected $cron_interval_name = 'kcf_bihourly';
-		protected $aggregate_program_types = array('music','news-ideas');	//program types we know to pregenerate a cache for
+		protected $feed_slug;	//feed endpoint
+		protected $episode_page_slug;	//path for episode-specific page
+		protected $orig_feed_num;	//default num items per feed
+		protected $cron_job_name;	//cron job name
+		protected $cron_interval;	//cron interval in minutes
+		protected $cron_interval_name;	//custom cron interval name
+		protected $aggregate_program_types;	//program types we know to pregenerate a cache for
 		
 		function __construct() {			
-			//add action and filter needed
+			
+			//set variables to use in class
+			$this->feed_slug = KBCS_Config::get_feed_slug();
+			$this->episode_page_slug = KBCS_Config::get_episode_page_slug();
 			$this->orig_feed_num = get_option('posts_per_rss');
+			$this->cron_job_name = KBCS_Config::get_cron_job_name();
+			$this->cron_interval = KBCS_Config::get_cron_interval();
+			$this->cron_interval_name = KBCS_Config::get_cron_interval_name();
+			$this->aggregate_program_types = KBCS_Config::get_aggregate_program_types();
+			
+			//add action and filter needed
 			add_filter( 'pre_option_posts_per_rss', array( $this, 'kcf_posts_per_rss') );
 			add_action( 'init', array($this, 'kcf_add_feed'));
 			add_filter( 'cron_schedules', array($this, 'kcf_add_cron_interval') );	//set cron job interval
 			add_action( $this->cron_job_name, array($this, 'kcf_generate_all_feed_objects'));
 		}
 	
+		/**
+		* Activation and deactivation hooks should probably be abstracted out rather than being in just one of the classes, 
+		* but that also adds redundancy. And the other class doesn't currently have activation/deactivation task.
+		* Basically, don't judge me, future developer.
+		**/
 		//do activation related events
 		function kcf_activation(){
 			if ( ! wp_next_scheduled( $this->cron_job_name ) ) {
 				wp_schedule_event(time(), $this->cron_interval_name, $this->cron_job_name);
 			}
+			//set option on install that can be used later to test whether to flush rewrite rules
+			add_option(KBCS_Config::get_option_install_name(), true);
 		}
 		
 		//do deactivation events
 		function kcf_deactivation(){
 			wp_clear_scheduled_hook($this->cron_job_name);
+			delete_option(KBCS_Config::get_option_install_name());
 			flush_rewrite_rules();
 		}
 		
@@ -75,9 +95,9 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			
 			//include appropriate feed template file
 			if(!empty($query_program_type)){
-				include dirname( __FILE__ ) . '/templates/kbcs-programtype-xml.php';
+				include dirname( __FILE__ ) . '/templates/programtype-xml.php';
 			} else if ( isset($query_post_type) && $query_post_type == "programs") {
-				include dirname( __FILE__ ) . '/templates/kbcs-programs-xml.php';
+				include dirname( __FILE__ ) . '/templates/programs-xml.php';
 			}
 
 			exit();
@@ -99,7 +119,7 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 		
 		//create custom interval for cron job
 		function kcf_add_cron_interval($interval) {
-    		$interval[$this->cron_interval_name] = array('interval' => $this->cron_interval*60, 'display' => 'Every half hour');
+    		$interval[$this->cron_interval_name] = array('interval' => $this->cron_interval*60, 'display' => 'KBCS App Customizations plugin interval');
     		return $interval;
 		}
 		
@@ -126,13 +146,6 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 				'taxonomy' => 'program_type',
 				'term' => $prog_type,
 				'posts_per_page' => 100
-				/*'tax_query' => array(
-					array(
-						'taxonomy' => 'program_type',
-						'field'    => 'slug',
-						'terms'    => array($prog_type),
-					),
-				),*/
 			);
 			
 			//do custom query

@@ -6,7 +6,6 @@ $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3
 
 while ( $wp_query->have_posts() ) {
   $wp_query->the_post();
-  //var_dump($post);
   $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
 
   //call the JSON API
@@ -78,14 +77,17 @@ while ( $wp_query->have_posts() ) {
   	  
         $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
         $title_node = $item_node->appendChild($xml->createElement("title", $title)); //Add title under "item"
-        //$link_node = $item_node->appendChild($xml->createElement("link", "http://www.your-site.com/link/goes/here/")); //add link node under "item"
+        
+        $episode_link = get_bloginfo_rss('url') . "/" . $this->episode_page_slug . "/" . $result['showId'];
+        $link_node = $item_node->appendChild($xml->createElement("link", $episode_link)); //add link node under "item"
+        
         $creator_node = $item_node->appendChild($xml->createElement("dc:creator"));
   	    $creator_contents = $xml->createCDATASection(htmlentities($result['host']));  
         $creator_node->appendChild($creator_contents);
   	  
         //Unique identifier for the item (GUID)
-        $guid_link = $xml->createElement("guid", get_the_guid() . "/" . $result['showId']); //adding show ID to WP guid to create unique string
-        $guid_link->setAttribute("isPermaLink","false");
+        $guid_link = $xml->createElement("guid", $episode_link); //use new episode specific page
+        $guid_link->setAttribute("isPermaLink","true");
         $guid_node = $item_node->appendChild($guid_link); 
        
          //create "description" node under "item" to use for feature image
@@ -96,7 +98,7 @@ while ( $wp_query->have_posts() ) {
           //var_dump($image_uri);
           if ( !empty($image_uri[0]) ){
             $description_node = $item_node->appendChild($xml->createElement("description"));  
-            $description_contents = $xml->createCDATASection(htmlentities($image_uri[0]));  
+            $description_contents = $xml->createCDATASection("<img src='".$image_uri[0]."' />");  
             $description_node->appendChild($description_contents);
           }
         }

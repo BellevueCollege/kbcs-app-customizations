@@ -71,25 +71,27 @@ if($episode_slice) { //we have program info
 	  
       $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
       $title_node = $item_node->appendChild($xml->createElement("title", htmlentities($title))); //Add title under "item"
-      //$link_node = $item_node->appendChild($xml->createElement("link", "http://kbcs.fm/path/to/episode/")); //add link node under "item"
+      
+      $episode_link = get_bloginfo_rss('url') . "/" . $this->episode_page_slug . "/" . $result['showId'];
+      $link_node = $item_node->appendChild($xml->createElement("link", $episode_link)); //add link node under "item"
       $creator_node = $item_node->appendChild($xml->createElement("dc:creator"));
 	    $creator_contents = $xml->createCDATASection(htmlentities($result['host']));  
       $creator_node->appendChild($creator_contents);
 	  
       //Unique identifier for the item (GUID)
-      $guid_link = $xml->createElement("guid", get_the_guid() . "/" . $result['showId']); //adding show ID to WP guid to create unique string
-      $guid_link->setAttribute("isPermaLink","false");
+      $guid_link = $xml->createElement("guid", $episode_link); //use new episode specific page
+      $guid_link->setAttribute("isPermaLink","true");
       $guid_node = $item_node->appendChild($guid_link); 
      
       //create "description" node under "item" to use for feature image
       if ( has_post_thumbnail($result['wp_post_id']) ) {
-
+        
           $image_id = get_post_thumbnail_id($result['wp_post_id']);
           $image_uri = wp_get_attachment_image_src($image_id, "full");
 
           if ( !empty($image_uri[0]) ){
             $description_node = $item_node->appendChild($xml->createElement("description"));  
-            $description_contents = $xml->createCDATASection(htmlentities($image_uri[0]));  
+            $description_contents = $xml->createCDATASection("<img src='".$image_uri[0]."' />");  
             $description_node->appendChild($description_contents);
           }
       }
