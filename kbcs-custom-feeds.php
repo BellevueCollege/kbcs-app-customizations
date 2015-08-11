@@ -155,40 +155,48 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 
 			//loop through all programs of this program type, get episodes from Playlist Center, and add to episode array
 			$episode_array = array();
+			$done_array = array();
 			while ( $cust_query->have_posts() ) {
   				$cust_query->the_post();
 				$wp_post_id = get_the_ID();
   				$program_id = get_post_meta($wp_post_id, 'programid_mb', true);
-  				$content = file_get_contents(sprintf($program_url,$program_id,20));
-  				$json = json_decode($content, true);
+				
+				//only do API call if program id exists and is unique (i.e. hasn't been called already)
+				if ( !empty($program_id) && !in_array($program_id, $done_array) )
+				{
+  					$content = file_get_contents(sprintf($program_url,$program_id,20));
+  					$json = json_decode($content, true);
   
-  				if( $json ){
-				    foreach( $json as $result ) {
-				        //Set correct timezone - is there a way to get this from the server?
-				        $timezone = new DateTimeZone("America/Los_Angeles");
-				        
-				        //Create now date/time object
-				        $now = new DateTime();
-				        $now->setTimezone($timezone);
-				        
-				        //Create show date/time object
-				        $show_date = new DateTime($result['start'], $timezone);
-				
-				        //Get timestamps for comparison, skip this result if show happens in future
-				        $now_ts = $now->getTimestamp();
-				        $show_date_ts = $show_date->getTimestamp();
-				
-				        if ( ($now_ts - $show_date_ts) < 0 ) {
-				          //show happens in the future so skip
-				          continue;
-				        }
-				        else {
-				          //add to results
-						  $result['wp_post_id'] = $wp_post_id;	//save WP post id so we don't have to query it again later
-				          $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
-				        }
-				    }
-  				}
+	  				if( $json ){
+					    foreach( $json as $result ) {
+					        //Set correct timezone - is there a way to get this from the server?
+					        $timezone = new DateTimeZone("America/Los_Angeles");
+					        
+					        //Create now date/time object
+					        $now = new DateTime();
+					        $now->setTimezone($timezone);
+					        
+					        //Create show date/time object
+					        $show_date = new DateTime($result['start'], $timezone);
+					
+					        //Get timestamps for comparison, skip this result if show happens in future
+					        $now_ts = $now->getTimestamp();
+					        $show_date_ts = $show_date->getTimestamp();
+					
+					        if ( ($now_ts - $show_date_ts) < 0 ) {
+					          //show happens in the future so skip
+					          continue;
+					        }
+					        else {
+					          //add to results
+							  $result['wp_post_id'] = $wp_post_id;	//save WP post id so we don't have to query it again later
+					          $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
+					        }
+					    }
+	  				}
+					
+					$done_array[] = $program_id;	//add program id to processed array
+				}
 			}
 			
 			//reset original post data

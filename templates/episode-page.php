@@ -32,7 +32,7 @@ if ( isset($wp_query->query_vars['episode_page_var']) && is_numeric($wp_query->q
   			$cust_query->the_post();
 			$wp_post_id = get_the_ID();
 			$image_id = get_post_thumbnail_id($wp_post_id);
-          	$program_img_uri = wp_get_attachment_image_src($image_id, "thumbnail");
+          	$program_img_uri = wp_get_attachment_image_src($image_id, array(9999,90));
 		}
 	?>
 <!DOCTYPE html>
@@ -51,7 +51,7 @@ if ( isset($wp_query->query_vars['episode_page_var']) && is_numeric($wp_query->q
 		.playlist-item { background-color: #eee; }
 		.comment-block { color: #999; }
 		.media { margin-bottom: .8em; }
-		.img-thumbnail { height: 90px; width: 90px; }
+		.img-thumbnail { height: 90px; }
 	</style>
 </head>
 
