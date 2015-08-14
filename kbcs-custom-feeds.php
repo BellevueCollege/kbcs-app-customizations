@@ -112,6 +112,9 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			global $wp_query;
 			$query_program_type = $wp_query->get('program_type');
 			if ( $wp_query->is_main_query() && $wp_query->is_feed( $this->feed_slug ) && !empty($query_program_type) ) {
+				//Oh, hey, look at this weird override value set at an arbitrarily high value! 
+				//This overrides any other supplied value in the case that this is an aggregate/program type feed call.
+				//This needs to be set at a high enough value to ensure we get all the programs of a specific category.
 				return 100;
 			}
     		return $option_name;
