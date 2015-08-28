@@ -60,6 +60,7 @@ if ( isset($wp_query->query_vars['episode_page_var']) && is_numeric($wp_query->q
 	<div class="container"><!-- outer container -->
 		<div class="container-fluid content"><!-- content container -->
 			<div class="row"><!-- content row -->
+				<div></div>
 				<div class="media">
 					<!-- Display title and image -->
 					<div class="media-body">

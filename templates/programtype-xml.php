@@ -18,8 +18,8 @@ if ( false === $prog_object ){
 //cut array to specified size
 $start_result = 0;
 $episode_slice = null;
-if ( !empty($_REQUEST["page"]) && is_numeric($_REQUEST["page"]) ) {
-  $page = (int)$_REQUEST["page"];
+if ( !empty($_GET["page"]) && is_numeric($_GET["page"]) ) {
+  $page = (int)$_GET["page"];
   $start_result = ($page-1) * $num;
 }
 
