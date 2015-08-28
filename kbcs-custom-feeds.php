@@ -83,8 +83,8 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			
 			//Set alternate item count, if provided
 			$num = $this->orig_feed_num;
-			if ( !empty($_REQUEST["itemcount"]) ) {
-  				$num = intval($_REQUEST["itemcount"]);
+			if ( !empty($_GET["itemCount"]) ) {
+  				$num = intval($_GET["itemCount"]);
 			}
 			
 			$post_type = "programs";
