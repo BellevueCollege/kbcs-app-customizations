@@ -92,13 +92,18 @@ while ( $wp_query->have_posts() ) {
        
          //create "description" node under "item" to use for feature image
         if ( has_post_thumbnail() ) {
-          //echo "thumbnail";
+          
           $image_id = get_post_thumbnail_id(get_the_ID());
           $image_uri = wp_get_attachment_image_src($image_id, "full");
-          //var_dump($image_uri);
+
           if ( !empty($image_uri[0]) ){
+            $img_uri = $image_uri[0];
+            if ( substr($img_uri, 0, 2) == "//" ) {
+              //is protocol-relative URI, change to protocol-specific URI per app developer request
+              $img_uri = "http:" . $img_uri;
+            }
             $description_node = $item_node->appendChild($xml->createElement("description"));  
-            $description_contents = $xml->createCDATASection("<img src='".$image_uri[0]."' />");  
+            $description_contents = $xml->createCDATASection('<img src="'.$img_uri.'" />');  
             $description_node->appendChild($description_contents);
           }
         }

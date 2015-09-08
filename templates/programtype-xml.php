@@ -90,8 +90,13 @@ if($episode_slice) { //we have program info
           $image_uri = wp_get_attachment_image_src($image_id, "full");
 
           if ( !empty($image_uri[0]) ){
+            $img_uri = $image_uri[0];
+            if ( substr($img_uri, 0, 2) == "//" ) {
+              //is protocol-relative URI, change to protocol-specific URI per app developer request
+              $img_uri = "http:" . $img_uri;
+            }
             $description_node = $item_node->appendChild($xml->createElement("description"));  
-            $description_contents = $xml->createCDATASection("<img src='".$image_uri[0]."' />");  
+            $description_contents = $xml->createCDATASection('<img src="'.$img_uri.'" />');  
             $description_node->appendChild($description_contents);
           }
       }
