@@ -66,8 +66,14 @@ $channel_node->appendChild($xml->createElement("generator", 'KBCS Custom Feeds P
 
 if($episode_slice) { //we have program info
 	foreach ( $episode_slice as $result ) {	  
-
-	    $title = $result['title'].' '.date_format(date_create($result['start']), "n/j/y");
+    
+      //be smart about formatting the start time for the show
+      $start_date = date_create($result['start']);
+      $start_min = date_format($start_date, "i");
+      $start_time = ($start_min == "00") ? date_format($start_date, "ga") : date_format($start_date, "g:ia");
+      
+      //set show title
+	    $title = $result['title'].' '.date_format($start_date, "n/j/y").', '.$start_time;
 	  
       $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
       $title_node = $item_node->appendChild($xml->createElement("title", htmlentities($title))); //Add title under "item"

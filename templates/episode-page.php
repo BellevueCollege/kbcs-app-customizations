@@ -14,7 +14,16 @@ if ( isset($wp_query->query_vars['episode_page_var']) && is_numeric($wp_query->q
 
 	if ( $json ){
 		$result = $json[0];
-		$title = $result['title'].' - '.date_format(date_create($result['start']), "n/j/y");
+		
+		//be smart about formatting the start time for the show
+      	$start_date = date_create($result['start']);
+      	$start_min = date_format($start_date, "i");
+      	$start_time = ($start_min == "00") ? date_format($start_date, "ga") : date_format($start_date, "g:ia");
+      
+      	//set show title
+		$title = $result['title'].' - '.date_format($start_date, "n/j/y").', '.$start_time;
+		
+		//set program information
 		$program_id = $result['programId'];
 		$program_img_uri = "";
 		
