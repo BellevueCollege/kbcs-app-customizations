@@ -105,6 +105,8 @@ if($episode_slice) { //we have program info
   	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
   	  $enc_node = $xml->createElement("enclosure");
   	  $enc_node->setAttribute("type", "audio/mpeg");
+      $clength = (!empty($result['content_length']) ) ? $result['content_length'] : $this->kcf_get_remote_filesize($enclosure);
+      $enc_node->setAttribute("length", $clength);
       $enc_node->setAttribute("url", $enclosure);
   	  $item_node->appendChild($enc_node);
 	  

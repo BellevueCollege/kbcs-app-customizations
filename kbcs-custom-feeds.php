@@ -155,7 +155,8 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			$cust_query = new WP_Query($args);
 
 			$program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programID=%d&pageSize=%d'; //Playlist Center API URL
-
+			$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3'; //template for archive audio filename
+			
 			//loop through all programs of this program type, get episodes from Playlist Center, and add to episode array
 			$episode_array = array();
 			$done_array = array();
@@ -208,8 +209,32 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			//Do key-ed sort (since start is used as key) by start date reverse
 			krsort($episode_array);
 			
+			//cut down to only 200 items before getting content length (in bytes)
+			//Re-looping is super unideal, but better to get the length here and have it cached than 
+			//doing when feed is requested
+			$episode_slice = array_slice($episode_array, 0, 200);
+			$slice_array = array();
+			foreach ( $episode_slice as $result ) {
+				$clength = $this->kcf_get_remote_filesize(sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi')));
+				$result['content_length'] = $clength;
+				$slice_array[$result['start']] = $result;
+			}
+			
 			//add episode object for this program type to Wordpress long-term cache
-			set_transient("kcf_object_".$prog_type, $episode_array, 3605);
-		}	
+			set_transient("kcf_object_".$prog_type, $slice_array, 3605);
+		}
+		
+		/**
+		* Get content length in bytes of show audio
+		* Does a headers-only request to remote file then reads
+		* content-length header of response.
+		**/
+		function kcf_get_remote_filesize($url)
+		{
+    		$head = array_change_key_case(get_headers($url, 1));
+    		// content-length of download (in bytes), read from Content-Length: field
+    		$clen = isset($head['content-length']) ? $head['content-length'] : 0;
+			return $clen;
+		}
 	}
 }
