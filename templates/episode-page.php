@@ -19,29 +19,37 @@ if ( isset($wp_query->query_vars['episode_page_var']) && is_numeric($wp_query->q
       	$start_date = date_create($result['start']);
       	$start_min = date_format($start_date, "i");
       	$start_time = ($start_min == "00") ? date_format($start_date, "ga") : date_format($start_date, "g:ia");
+		$start_hour = date_format($start_date, "H:i");
+		$start_day = date_format($start_date, "l");
       
       	//set show title
-		$title = $result['title'].' - '.date_format($start_date, "n/j/y").', '.$start_time;
+		$title_format = '%s - '.date_format($start_date, "n/j/y").', '.$start_time;
+		$title = sprintf($title_format, $result['title']);
 		
 		//set program information
 		$program_id = $result['programId'];
 		$program_img_uri = "";
 		
 		//define arguments for custom query
+		$meta_array = array();
+		$meta_array[] = array( 'key' => 'programid_mb', 'value' => $program_id);	//query by program id
+		$meta_array[] = array( 'key' => 'onair_starttime', 'value' => $start_hour ); // and program start time
+		$meta_array[] = array( 'key' => 'onair_'.strtolower($start_day), 'value' => 'on'); // and program air day to distinguish rebroadcasts
+
 		$args = array(
 			'post_type' => 'programs',
-			'meta_key'   => 'programid_mb',
-			'meta_value' => $program_id
+			'post_status' => 'publish',
+			'meta_query' => $meta_array
 		);
 			
 		//do custom query to get associated program information
 		$cust_query = new WP_Query($args);
-
 		if ( $cust_query->have_posts() ) {
   			$cust_query->the_post();
 			$wp_post_id = get_the_ID();
 			$image_id = get_post_thumbnail_id($wp_post_id);
           	$program_img_uri = wp_get_attachment_image_src($image_id, array(9999,90));
+			$title = sprintf($title_format, get_the_title($wp_post_id)); //use WP program title if available
 		}
 	?>
 <!DOCTYPE html>
