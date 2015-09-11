@@ -4,9 +4,11 @@ header('Content-Type: text/xml; charset=utf-8', true); //set document header con
 $program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programId=%d&pageSize=%d';
 $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3';
 
+//var_dump($wp_query);
 while ( $wp_query->have_posts() ) {
   $wp_query->the_post();
   $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
+  //var_dump($program_id);
 
   //call the JSON API
   $content = file_get_contents(sprintf($program_url,$program_id,$num));
@@ -118,8 +120,8 @@ while ( $wp_query->have_posts() ) {
     	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
     	  $enc_node = $xml->createElement("enclosure");
     	  $enc_node->setAttribute("type", "audio/mpeg");
-        $clength = (!empty($result['content_length']) ) ? $result['content_length'] : $this->kcf_get_remote_filesize($enclosure);
-        $enc_node->setAttribute("length", $clength);
+        //$clength = (!empty($result['content_length']) ) ? $result['content_length'] : $this->kcf_get_remote_filesize($enclosure);
+        $enc_node->setAttribute("length", 0);
         $enc_node->setAttribute("url", $enclosure);
     	  $item_node->appendChild($enc_node);
   	  

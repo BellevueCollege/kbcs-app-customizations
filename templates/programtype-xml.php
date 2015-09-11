@@ -74,7 +74,7 @@ if($episode_slice) { //we have program info
       
       //set show title
 	    $title = $result['title'].' '.date_format($start_date, "n/j/y").', '.$start_time;
-	  
+
       $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
       $title_node = $item_node->appendChild($xml->createElement("title", htmlentities($title))); //Add title under "item"
       
@@ -111,8 +111,8 @@ if($episode_slice) { //we have program info
   	  $enclosure = sprintf($audio_url, date_format(date_create($result['start']), 'YmdHi'));
   	  $enc_node = $xml->createElement("enclosure");
   	  $enc_node->setAttribute("type", "audio/mpeg");
-      $clength = (!empty($result['content_length']) ) ? $result['content_length'] : $this->kcf_get_remote_filesize($enclosure);
-      $enc_node->setAttribute("length", $clength);
+      //$clength = (!empty($result['content_length']) ) ? $result['content_length'] : $this->kcf_get_remote_filesize($enclosure);
+      $enc_node->setAttribute("length", 0);
       $enc_node->setAttribute("url", $enclosure);
   	  $item_node->appendChild($enc_node);
 	  

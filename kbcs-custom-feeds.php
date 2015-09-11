@@ -212,6 +212,8 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			//cut down to only 200 items before getting content length (in bytes)
 			//Re-looping is super unideal, but better to get the length here and have it cached than 
 			//doing when feed is requested
+			/** REMOVING as it was determined that setting length to 0 was sufficient **/
+			/**
 			$episode_slice = array_slice($episode_array, 0, 200);
 			$slice_array = array();
 			foreach ( $episode_slice as $result ) {
@@ -219,9 +221,10 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 				$result['content_length'] = $clength;
 				$slice_array[$result['start']] = $result;
 			}
+			**/
 			
 			//add episode object for this program type to Wordpress long-term cache
-			set_transient("kcf_object_".$prog_type, $slice_array, 3605);
+			set_transient("kcf_object_".$prog_type, $episode_array, 3605);
 		}
 		
 		/**
