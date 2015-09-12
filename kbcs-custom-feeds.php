@@ -193,7 +193,36 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 					        }
 					        else {
 					          //add to results
-							  $result['wp_post_id'] = $wp_post_id;	//save WP post id so we don't have to query it again later
+							  $result['wp_post_id'] = $wp_post_id; //save WP post id so we don't have to query it again later
+							  
+							  //do subquery to get program information specific to the program air time, air day
+							  //i.e. so we can distinguish rebroadcasts of shows
+							  $start_hour = date_format($show_date, "H:i");
+							  $start_day = date_format($show_date, "l");
+							  $prog_query = $this->kcf_do_custom_subquery($program_id, $start_hour, $start_day);
+							  
+							  if ( $prog_query->have_posts() ) {
+  								$prog_query->the_post();
+								
+								//get/save program post id
+								$wp_post_id = get_the_ID();
+								$result['wp_post_id'] = $wp_post_id;
+								
+								//get/save program post title
+								$wp_title = get_the_title($wp_post_id);
+								$result['wp_title'] = $wp_title;
+								
+								//get/save program post image
+								if( has_post_thumbnail($wp_post_id) ) {
+									$image_id = get_post_thumbnail_id($wp_post_id);
+          							$program_img_uri = wp_get_attachment_image_src($image_id, "full");
+									$result['wp_image'] = $program_img_uri;
+								}
+							  }
+							  
+							  //reset original post data after subquery
+							  wp_reset_postdata();
+							  
 					          $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
 					        }
 					    }
@@ -203,16 +232,16 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 				}
 			}
 			
-			//reset original post data
+			//reset original post data after main query
 			wp_reset_postdata();
 
 			//Do key-ed sort (since start is used as key) by start date reverse
 			krsort($episode_array);
 			
+			/** REMOVING as it was determined that setting length to 0 was sufficient **/
 			//cut down to only 200 items before getting content length (in bytes)
 			//Re-looping is super unideal, but better to get the length here and have it cached than 
 			//doing when feed is requested
-			/** REMOVING as it was determined that setting length to 0 was sufficient **/
 			/**
 			$episode_slice = array_slice($episode_array, 0, 200);
 			$slice_array = array();
@@ -225,6 +254,30 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			
 			//add episode object for this program type to Wordpress long-term cache
 			set_transient("kcf_object_".$prog_type, $episode_array, 3605);
+		}
+		
+		/**
+		* Get WP program post based on program id, show start time, and show start day of the week
+		* This is used to to distinguish shows from there rebroadcasts when gathering show/episode information
+		**/
+		function kcf_do_custom_subquery($_programid, $_starttime, $_startday) {
+			//define arguments for custom query
+			$meta_array = array();
+			$meta_array[] = array( 'key' => 'programid_mb', 'value' => $_programid);	//query by program id
+			$meta_array[] = array( 'key' => 'onair_starttime', 'value' => $_starttime ); // and program start time
+			$meta_array[] = array( 'key' => 'onair_'.strtolower($_startday), 'value' => 'on'); // and program air day to distinguish rebroadcasts
+	
+			$args = array(
+				'post_type' => 'programs',
+				'post_status' => 'publish',
+				'meta_query' => $meta_array
+			);
+				
+			//do custom query to get associated program information
+			$cust_query = new WP_Query($args);
+			
+			//return query
+			return $cust_query;
 		}
 		
 		/**

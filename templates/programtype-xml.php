@@ -73,7 +73,12 @@ if($episode_slice) { //we have program info
       $start_time = ($start_min == "00") ? date_format($start_date, "ga") : date_format($start_date, "g:ia");
       
       //set show title
-	    $title = $result['title'].' '.date_format($start_date, "n/j/y").', '.$start_time;
+      $title_format = '%s '.date_format($start_date, "n/j/y").', '.$start_time;
+      $title = sprintf($title_format, $result['title']);
+      
+      if ( isset($result['wp_title']) ) {
+        $title = sprintf($title_format, $result['wp_title']); //if WP program title exists, use that instead
+      }
 
       $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
       $title_node = $item_node->appendChild($xml->createElement("title", htmlentities($title))); //Add title under "item"
@@ -90,10 +95,9 @@ if($episode_slice) { //we have program info
       $guid_node = $item_node->appendChild($guid_link); 
      
       //create "description" node under "item" to use for feature image
-      if ( has_post_thumbnail($result['wp_post_id']) ) {
+      if ( isset($result['wp_image']) ) {
         
-          $image_id = get_post_thumbnail_id($result['wp_post_id']);
-          $image_uri = wp_get_attachment_image_src($image_id, "full");
+          $image_uri = $result['wp_image'];
 
           if ( !empty($image_uri[0]) ){
             $img_uri = $image_uri[0];
