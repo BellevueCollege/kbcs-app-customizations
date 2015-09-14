@@ -84,7 +84,9 @@ while ( $wp_query->have_posts() ) {
         $title = $result['title'].' '.date_format($start_date, "n/j/y").', '.$start_time;
   	  
         $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
-        $title_node = $item_node->appendChild($xml->createElement("title", $title)); //Add title under "item"
+        //$title_node = $item_node->appendChild($xml->createElement("title", $title)); //Add title under "item"
+        $title_node = $item_node->appendChild($xml->createElement("title"));
+        $title_node->appendChild($xml->createTextNode($title)); //use createTextNode so title is properly encoded by default
         
         $episode_link = get_bloginfo_rss('url') . "/" . $this->episode_page_slug . "/" . $result['showId'];
         $link_node = $item_node->appendChild($xml->createElement("link", $episode_link)); //add link node under "item"
