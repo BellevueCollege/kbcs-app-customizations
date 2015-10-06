@@ -8,9 +8,49 @@ $audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3
 while ( $wp_query->have_posts() ) {
   $wp_query->the_post();
   $program_id = get_post_meta(get_the_ID(), 'programid_mb', true);
-  //var_dump($program_id);
+  
 
-  //call the JSON API
+  /**
+  /////////// 
+  NOTE ON COMMENTING OUT: Changes were made to ensure that program-specific feeds wouldn't include rebroadcast shows. 
+  Since rebroadcast shows share program IDs, I did some show air time query gymnastics to filter non-original shows. But then 
+  it got really fuzzy because not all program end points resolve anyway since they forward to the page of the original program. In any case, 
+  Bruce and I eventually determined that all programs, even if rebroadcast, should have their own program IDs. Thus all of 
+  this isn't needed anyway. Leaving for the time being, but will likely disappear into the ether...
+  ///////// 
+  //Get the count of WP programs that use the given program ID
+  //If more than 1, we need to get more JSON results
+  //Why the gymnastics? Because if it's a rebroadcast program, we have to skip some results, so 
+  //we must get a number that ensures we have 'enough' of the correct broadcast time.
+  global $wpdb;
+  $prog_count = $wpdb->get_var(
+                  $wpdb->prepare("SELECT count(DISTINCT pm.post_id)
+                    FROM $wpdb->postmeta pm
+                    JOIN $wpdb->posts p ON (p.ID = pm.post_id)
+                    WHERE 
+                      p.post_type = 'programs' 
+                      AND pm.meta_key = %s
+                      AND pm.meta_value = %s
+                      AND p.post_status = 'publish'", "programid_mb", $program_id));
+  $pull_count = $num;
+  if ( is_numeric($prog_count) )
+    $pull_count *= intval($prog_count);
+  **/
+    
+  //gather start time and air date info from WP
+  /** commenting out as may not use 
+  $prog_air_time = get_post_meta(get_the_ID(), 'onair_starttime', true);
+  $prog_air_days = array();
+  $weekdays = array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+  foreach ( $weekdays as $day ) {
+    //check the onair_weekday meta value - if it's on, add to our array of air days
+    $is_aired = get_post_meta(get_the_ID(), 'onair_'.strtolower($day), true);
+    if ( isset($is_aired) && $is_aired == "on" ) $prog_air_days[] = $day;
+  }
+  $content = file_get_contents(sprintf($program_url,$program_id,$pull_count));
+  **/
+  
+  //call the JSON API 
   $content = file_get_contents(sprintf($program_url,$program_id,$num));
   $json = json_decode($content, true);
 
@@ -34,7 +74,7 @@ while ( $wp_query->have_posts() ) {
   $channel = $xml->createElement("channel");  
   $channel_node = $rss_node->appendChild($channel);
    
-  //a feed should contain an atom:link element (info http://j.mp/1nuzqeC)
+  //a feed should contain an atom:link element
   $host = @parse_url(home_url());
   $self_link = esc_url( set_url_scheme( 'http://' . $host['host'] . wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) ;
   $channel_atom_link = $xml->createElement("atom:link");  
@@ -80,11 +120,25 @@ while ( $wp_query->have_posts() ) {
         $start_min = date_format($start_date, "i");
         $start_time = ($start_min == "00") ? date_format($start_date, "ga") : date_format($start_date, "g:ia");
         
+        //check show air time and air days - skip if don't match that of the given program
+        /** commenting out - as don't currently need to worry about rebroadcast shows
+        $show_air_time = date_format($start_date, "H:i");
+        $show_air_day = date_format($start_date, "l");
+        //var_dump($show_air_time);
+        if ( !($prog_air_time == $show_air_time && in_array($show_air_day, $prog_air_days)) ) {
+          continue;
+        }
+        **/
+        
         //set show title
-        $title = $result['title'].' '.date_format($start_date, "n/j/y").', '.$start_time;
-  	  
+        $title_format = '%s '.date_format($start_date, "n/j/y").', '.$start_time;
+        $title = sprintf($title_format, $result['title']);
+      
+        if ( isset($result['wp_title']) ) {
+          $title = sprintf($title_format, $result['wp_title']); //if WP program title exists, use that instead
+        }
+        
         $item_node = $channel_node->appendChild($xml->createElement("item")); //create a new node called "item"
-        //$title_node = $item_node->appendChild($xml->createElement("title", $title)); //Add title under "item"
         $title_node = $item_node->appendChild($xml->createElement("title"));
         $title_node->appendChild($xml->createTextNode($title)); //use createTextNode so title is properly encoded by default
         
