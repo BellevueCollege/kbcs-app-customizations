@@ -2,7 +2,7 @@
 header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
 
 $program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programId=%d&pageSize=%d';
-$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3';
+$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-03.mp3';
 
 //var_dump($wp_query);
 while ( $wp_query->have_posts() ) {

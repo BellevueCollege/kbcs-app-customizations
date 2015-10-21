@@ -5,7 +5,7 @@
 **/
 header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
 
-$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-01.mp3'; //template for archive audio filename
+$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-03.mp3'; //template for archive audio filename
 
 $prog_object = get_transient("kcf_object_".$query_program_type);
 
