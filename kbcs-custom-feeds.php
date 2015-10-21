@@ -192,12 +192,27 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 					          continue;
 					        }
 					        else {
-					          //add to results
-							  $result['wp_post_id'] = $wp_post_id; //save WP post id so we don't have to query it again later
-							  
+								//add to results
+							  	$result['wp_post_id'] = $wp_post_id; //save WP post id so we don't have to query it again later
+							  								//get/save program post title
+								$wp_title = get_the_title($wp_post_id);
+								$result['wp_title'] = $wp_title;
+								
+								//get/save program post image
+								if( has_post_thumbnail($wp_post_id) ) {
+									$image_id = get_post_thumbnail_id($wp_post_id);
+          							$program_img_uri = wp_get_attachment_image_src($image_id, "full");
+									$result['wp_image'] = $program_img_uri;
+								}
+							  /**************************
+							  / REMOVING as it was determined that each rebroadcast program would have its own program ID rather 
+							  / than reusing the original broadcast one. With this, we don't need to do this subquery. However, 
+							  / I'm still going to save the image and title to the query as that will save us performance in the 
+							  / generation of the feed (since we won't have to regather it from WP).
+							  **************************/
 							  //do subquery to get program information specific to the program air time, air day
 							  //i.e. so we can distinguish rebroadcasts of shows
-							  $start_hour = date_format($show_date, "H:i");
+							  /*$start_hour = date_format($show_date, "H:i");
 							  $start_day = date_format($show_date, "l");
 							  $prog_query = $this->kcf_do_custom_subquery($program_id, $start_hour, $start_day);
 							  
@@ -218,10 +233,11 @@ if(!class_exists('KBCS_Custom_Feeds')) {
           							$program_img_uri = wp_get_attachment_image_src($image_id, "full");
 									$result['wp_image'] = $program_img_uri;
 								}
-							  }
+								
+							  }*/
 							  
 							  //reset original post data after subquery
-							  wp_reset_postdata();
+							  //wp_reset_postdata();
 							  
 					          $episode_array[$result['start']] = $result; //add to episode array with 'start' as key so it can be sorted on later
 					        }
