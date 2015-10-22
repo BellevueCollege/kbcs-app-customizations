@@ -65,6 +65,7 @@ while ( $wp_query->have_posts() ) {
   $rss_node->setAttribute("xmlns:dc","http://purl.org/dc/elements/1.1/"); //xmlns:dc (info http://j.mp/1mHIl8e )
   $rss_node->setAttribute("xmlns:content","http://purl.org/rss/1.0/modules/content/"); //xmlns:content (info http://j.mp/1og3n2W)
   $rss_node->setAttribute("xmlns:atom","http://www.w3.org/2005/Atom");//xmlns:atom (http://j.mp/1tErCYX )
+  $rss_node->setAttribute("xmlns:radiobookmark", "http://www.radiobookmark.com/dtds/?-1.0.dtd"); //xmlns:radiobookmark
   
   //Create RFC822 Date format to comply with RFC822
   $date_f = date("D, d M Y H:i:s T", time());
