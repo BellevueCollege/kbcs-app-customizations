@@ -5,7 +5,7 @@
 **/
 header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
 
-$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-03.mp3'; //template for archive audio filename
+$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/A-%s.mp3'; //template for archive audio filename
 
 $prog_object = get_transient("kcf_object_".$query_program_type);
 
@@ -120,7 +120,11 @@ if($episode_slice) { //we have program info
       $enc_node->setAttribute("length", 0);
       $enc_node->setAttribute("url", $enclosure);
   	  $item_node->appendChild($enc_node);
-	  
+      
+  	  //autosegue
+  	  $segue_node = $xml->createElement("radiobookmark:autosegue", "yes");
+  	  $item_node->appendChild($segue_node);
+      
       //Published date
       $date_rfc = gmdate(DATE_RFC2822, strtotime($result['start']));
       $pub_date = $xml->createElement("pubDate", $date_rfc);  

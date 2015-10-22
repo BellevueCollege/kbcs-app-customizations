@@ -2,7 +2,7 @@
 header('Content-Type: text/xml; charset=utf-8', true); //set document header content type to be XML
 
 $program_url = 'http://kbcsweb.bellevuecollege.edu/play/api/shows/?programId=%d&pageSize=%d';
-$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/%s-03.mp3';
+$audio_url = 'http://kbcsweb.bellevuecollege.edu/playlist/audioarchive/A-%s.mp3';
 
 //var_dump($wp_query);
 while ( $wp_query->have_posts() ) {
@@ -180,7 +180,11 @@ while ( $wp_query->have_posts() ) {
         $enc_node->setAttribute("length", 0);
         $enc_node->setAttribute("url", $enclosure);
     	  $item_node->appendChild($enc_node);
-  	  
+
+        //autosegue
+        $segue_node = $xml->createElement("radiobookmark:autosegue", "yes");
+        $item_node->appendChild($segue_node);
+      
         //Published date
         $date_rfc = gmdate(DATE_RFC2822, strtotime($result['start']));
         $pub_date = $xml->createElement("pubDate", $date_rfc);  
