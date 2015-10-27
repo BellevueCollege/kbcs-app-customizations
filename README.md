@@ -43,7 +43,7 @@ An additional request parameter of `itemCount` and value can be added to the URL
 
 - **Example:** http://kbcs.fm/programs/democracy-now/shows?itemCount=30
 
-If this parameter/value is not provided, the feed will return the default number of items as set in the Wordpress site options.
+If this parameter/value is not provided, the feed will return the default number of items as set in the WordPress site options.
 
 #### Paging
 _Available only for program type aggregate feed._ An additional request parameter of `page` and value can be added to the URL 
@@ -58,3 +58,33 @@ The plugin provides for serving a page specific to a single program show/episode
 
 - **Template URL:** http://kbcs.fm/show-page/[showId]
 - **Example usage:** http://kbcs.fm/show-page/43744
+
+##Functionality
+
+###General
+ - Provides valid feeds with properly encoded text (as applicable)
+ - Feeds are in reverse chronological order (i.e. newest show first)
+ - Airings that have not completed are not included in feeds
+ - If it exists, the WP title for a program will be used instead of the title from the PlaylistCenter API
+ 
+###Aggregate program type feed
+ - Provides a feed for a KBCS WordPress program type
+ - By default returns the WP default number of feed items
+ - Accepts `itemCount` parameter to override WP default
+ - Accepts `page` parameter
+ - Rebroadcast shows are included
+
+
+###Single program feed
+ - Provides a feed for a KBCS WordPress program
+ - By default returns the WP default number of feed items
+ - Accepts `itemCount` parameter to override WP default
+ - Should not include rebroadcast shows if WP is set up correctly (i.e. all programs, regardless of whether a rebroadcast, should have a unique program ID in the PlaylistCenter that is mapped to a single program in WP)
+
+ 
+###Single show page
+ - Provides info for single show
+ - Page is responsive, built to be used in mobile app context
+ 
+###Known issues
+ - Aggregate feed results may be unreliable after a certain number (40-60?) because of the way it must be generated since there is currently not a way in the Playlist Center API to pull program show information in aggregate. This feed does its best version of it by getting the last 20 shows for each program for a given type, aggregating all those items, sorting, then slicing off the number requested.
