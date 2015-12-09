@@ -19,7 +19,8 @@ if(!class_exists('KBCS_Config')) {
 		protected static $option_install_name = 'kbcs_plugin_installed';	//option used to know when installed (for flushing rewrite rules)
 		
 		protected static $static_content_server_domain = 's.bellevuecollege.edu';	//domain of static content server
-
+		protected static $rss_radiobookmark_namespace = 'http://www.radiobookmark.com/dtds/?-1.0.dtd';	//namespace for radiobookmark element
+		
 		public static function get_cron_job_name() {
 			return self::$cron_job_name;
 		}		
@@ -51,5 +52,9 @@ if(!class_exists('KBCS_Config')) {
 		public static function get_static_content_server_domain() {
 			return self::$static_content_server_domain;
 		}	
+		
+		public static function get_rss_radiobookmark_namespace() {
+			return self::$rss_radiobookmark_namespace;
+		}
 	}
 }

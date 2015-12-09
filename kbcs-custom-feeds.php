@@ -30,8 +30,10 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			add_filter( 'cron_schedules', array($this, 'kcf_add_cron_interval') );	//set cron job interval
 			add_action( $this->cron_job_name, array($this, 'kcf_generate_all_feed_objects'));
 			
+			add_action( 'rss2_ns', array($this, 'kcf_add_radiobookmark_namespace'));	//add action to add another namespace to RSS 2.0 feeds
 			add_filter( 'the_content_feed', array($this, 'kcf_filter_feed_content'));	//add filter for feed main content
 			add_filter( 'the_excerpt_rss', array($this, 'kcf_filter_feed_content'));	//add filter for feed excerpt content
+			add_action( 'rss2_item', array($this, 'kcf_add_custom_elements'), 5);	//add custom elements to RSS 2.0 feeds
 		}
 	
 		/**
@@ -324,6 +326,23 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			$content = str_ireplace( $find, $replace_with, $content);
 
 			return $content;
+		}
+		
+		/**
+		* Add radiobookmark namespace
+		* - Adds radiobookmark namespace to avoid invalidating the feed
+		**/
+		function kcf_add_radiobookmark_namespace(){
+			echo 'xmlns:radiobookmark="'.KBCS_Config::get_rss_radiobookmark_namespace().'"';
+		}
+		
+		/**
+		* Add custom elements to each RSS item
+		* - Currently only adds radiobookmark element
+		**/
+		function kcf_add_custom_elements() {
+			//adds radiobookmark element to each feed item
+			echo "<radiobookmark:selectDisplayMethod>InAppDescription</radiobookmark:selectDisplayMethod>";
 		}
 	}
 }
