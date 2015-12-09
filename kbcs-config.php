@@ -18,6 +18,8 @@ if(!class_exists('KBCS_Config')) {
 		
 		protected static $option_install_name = 'kbcs_plugin_installed';	//option used to know when installed (for flushing rewrite rules)
 		
+		protected static $static_content_server_domain = 's.bellevuecollege.edu';	//domain of static content server
+
 		public static function get_cron_job_name() {
 			return self::$cron_job_name;
 		}		
@@ -46,5 +48,8 @@ if(!class_exists('KBCS_Config')) {
 			return self::$option_install_name;
 		}
 		
+		public static function get_static_content_server_domain() {
+			return self::$static_content_server_domain;
+		}	
 	}
 }

@@ -29,6 +29,9 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			add_action( 'init', array($this, 'kcf_add_feed'));
 			add_filter( 'cron_schedules', array($this, 'kcf_add_cron_interval') );	//set cron job interval
 			add_action( $this->cron_job_name, array($this, 'kcf_generate_all_feed_objects'));
+			
+			add_filter( 'the_content_feed', array($this, 'kcf_filter_feed_content'));	//add filter for feed main content
+			add_filter( 'the_excerpt_rss', array($this, 'kcf_filter_feed_content'));	//add filter for feed excerpt content
 		}
 	
 		/**
@@ -307,6 +310,20 @@ if(!class_exists('KBCS_Custom_Feeds')) {
     		// content-length of download (in bytes), read from Content-Length: field
     		$clen = isset($head['content-length']) ? $head['content-length'] : 0;
 			return $clen;
+		}
+		
+		/**
+		* Change feed content before output
+		* - Currently only changes protocol-relative URLs to use protocol-specific URL
+		**/		
+		function kcf_filter_feed_content($content){
+
+			$find = "src=\"//".KBCS_Config::get_static_content_server_domain();
+			$replace_with = "src=\"http://".KBCS_Config::get_static_content_server_domain();
+
+			$content = str_ireplace( $find, $replace_with, $content);
+
+			return $content;
 		}
 	}
 }
