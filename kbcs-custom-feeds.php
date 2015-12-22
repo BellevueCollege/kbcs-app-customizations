@@ -320,9 +320,16 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 		**/		
 		function kcf_filter_feed_content($content){
 
+			//get post thumbnail (if exists) and prepend to content
+			global $post;
+			if( has_post_thumbnail($post->ID) ) {
+				$image_html = get_the_post_thumbnail($post->ID, "post-thumbnail", array( "style" => "float: left; margin-right: 7px; margin-bottom: 7px;"));
+				$content = $image_html . $content;
+			}
+			
+			//fix image srcs
 			$find = "src=\"//".KBCS_Config::get_static_content_server_domain();
 			$replace_with = "src=\"http://".KBCS_Config::get_static_content_server_domain();
-
 			$content = str_ireplace( $find, $replace_with, $content);
 
 			return $content;
@@ -341,6 +348,7 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 		* - Currently only adds radiobookmark element
 		**/
 		function kcf_add_custom_elements() {
+
 			//adds radiobookmark element to each feed item
 			echo "<radiobookmark:selectDisplayMethod>InAppDescription</radiobookmark:selectDisplayMethod>";
 		}
