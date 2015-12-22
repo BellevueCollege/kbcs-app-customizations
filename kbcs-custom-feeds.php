@@ -331,7 +331,30 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 			$find = "src=\"//".KBCS_Config::get_static_content_server_domain();
 			$replace_with = "src=\"http://".KBCS_Config::get_static_content_server_domain();
 			$content = str_ireplace( $find, $replace_with, $content);
+			
+			//fix image srcsets
+			$content = str_ireplace("srcset=\"//".KBCS_Config::get_static_content_server_domain(), "srcset=\"http://".KBCS_Config::get_static_content_server_domain(), $content);
+			$content = str_ireplace(" //".KBCS_Config::get_static_content_server_domain(), " http://".KBCS_Config::get_static_content_server_domain(), $content);
+			$content = str_ireplace(",//".KBCS_Config::get_static_content_server_domain(), ",http://".KBCS_Config::get_static_content_server_domain(), $content);
+			
+			/* Looks kind of cool, but doesn't work */
+			/*preg_match("/srcset=['\"][^\"'\s,]([^'\"]*)[\"']/", $content, $matches);
+			if ( !empty($matches) ) {
+						$hit = $matches[0];
+						$sub_pattern = "/[,'\"\s](\/\/".KBCS_Config::get_static_content_server_domain()."*)/";
+						//var_dump($sub_pattern);
+						//var_dump($sub_pattern);
+						preg_match($sub_pattern, $hit, $sub_matches);
+						var_dump($sub_matches);
+						if ( !empty($sub_matches) ) {
+							$sub_hit = $sub_matches[0];
+							$sub_replace = str_ireplace("//".KBCS_Config::get_static_content_server_domain(), "http://".KBCS_Config::get_static_content_server_domain(), $hit);
 
+							$content = str_ireplace( $sub_hit, $sub_replace, $content);
+						}
+			}*/
+			//var_dump($matches);
+			
 			return $content;
 		}
 		
