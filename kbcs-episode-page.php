@@ -10,7 +10,7 @@ if(!class_exists('KBCS_Episode_Page')) {
 		function __construct() {			
 			//add action and filters needed
 			$this->page_slug = KBCS_Config::get_episode_page_slug();
-			add_action('admin_init', array( $this, 'kep_add_rewrite_rule'));
+			add_action('init', array( $this, 'kep_add_rewrite_rule'));
 			add_filter('query_vars', array( $this, 'kep_handle_episodepage_query_vars'));
 			add_filter('template_include', array( $this, 'kep_render_page'), 1, 1);
 		}
