@@ -43,9 +43,10 @@ if(!class_exists('KBCS_Custom_Feeds')) {
 		**/
 		//do activation related events
 		function kcf_activation(){
-			if ( ! wp_next_scheduled( $this->cron_job_name ) ) {
+			/**** Removed from activation and moved to init so it gets recreated if affected by another plugin or core
+            if ( ! wp_next_scheduled( $this->cron_job_name ) ) {
 				wp_schedule_event(time(), $this->cron_interval_name, $this->cron_job_name);
-			}
+			}*/
 			//set option on install that can be used later to test whether to flush rewrite rules
 			add_option(KBCS_Config::get_option_install_name(), true);
 		}
@@ -79,6 +80,11 @@ if(!class_exists('KBCS_Custom_Feeds')) {
         		flush_rewrite_rules( false );
 			}
 			//end flush code //
+            
+            //add cron job scheduling to init process
+            if ( ! wp_next_scheduled( $this->cron_job_name ) ) {
+				wp_schedule_event(time(), $this->cron_interval_name, $this->cron_job_name);
+			}
 		}
 		
 		//render feed
