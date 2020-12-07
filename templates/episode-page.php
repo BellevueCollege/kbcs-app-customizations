@@ -127,7 +127,7 @@ if ( isset($wp_query->query_vars['episode_page_var']) && is_numeric($wp_query->q
 						</li>
 					<?php } ?>
 					</ul>
-				<? } ?>
+				<?php } ?>
 			</div><!-- end row -->
 		</div><!-- end content container -->
 	</div><!-- end outer container -->

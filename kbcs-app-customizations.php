@@ -4,7 +4,7 @@
 	Plugin URI: https://github.com/BellevueCollege/kbcs-app-customizations
 	Description: Provides additional feed functionality and episode-specific page utilizing the Playlist Center API
 	Author: Bellevue College Integration Team
-	Version: 0.0.0.4
+	Version: 1.0.1
 	Author URI: http://www.bellevuecollege.edu
 	GitHub Plugin URI: bellevuecollege/kbcs-app-customizations
 	*/
